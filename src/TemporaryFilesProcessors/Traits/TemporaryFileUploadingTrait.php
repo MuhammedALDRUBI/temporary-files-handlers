@@ -4,7 +4,7 @@ namespace TemporaryFilesHandlers\TemporaryFilesProcessors\Traits;
 
 use TemporaryFilesHandlers\TemporaryFilesHandler;
 use CustomFileSystem\CustomFileUploader;
-use CustomFileSystem\CustomFileUploader\S3CustomFileUploader;
+use CustomFileSystem\S3CustomFileSystem\CustomFileUploader\S3CustomFileUploader;
 use Exception;
 
 trait TemporaryFileUploadingTrait
