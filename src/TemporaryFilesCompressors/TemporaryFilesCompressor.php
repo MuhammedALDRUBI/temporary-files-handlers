@@ -100,9 +100,9 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
         $this->zip->setEncryptionName($fileEntryName , ZipArchive::EM_AES_256 , $this->zipPassword);
     }
 
-    protected function getFolderFiles(string $FolderPath) : array | SplFileInfo
+    public static function getFolderFiles(  string $FolderRealPath  ) :  array
     {
-        return File::allFiles($FolderPath);
+        return File::allFiles($FolderRealPath);
     }
 
     protected function setCompressedFolderFilesRelativePathIndex() : self
@@ -120,7 +120,7 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
     protected function addFolderFilesToZip(string $FolderPath) : self
     {
         $this->setCompressedFolderFilesRelativePathIndex();
-        foreach ($this->getFolderFiles($FolderPath) as $file)
+        foreach ($this::getFolderFiles($FolderPath) as $file)
         {
             $this->addFileToZip($file->getRealPath());
         }
@@ -180,6 +180,9 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
      */
     protected function setCompressedFilePath(string $FolderPath , string $CompressedFolderNewPath = "") :self
     {
+        /**
+         * @todo : needs to check if the folder path created in temp path or not 
+         */
         $this->setCompressedFolderPath($FolderPath);
         if($CompressedFolderNewPath != "") { $FolderPath = $CompressedFolderNewPath; }
         return $this->setZipFilePath($FolderPath)->setCompressedFileName();
@@ -201,7 +204,7 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
 
         /**
          * If No Exception Is Thrown ... The Folder We Have Compressed Will Be Deleted With Its Parent (Public's Storage Temporary Files Folder )
-           So There Is No Need To Delete It Now
+         * So There Is No Need To Delete It Now
          */
         return $this->zipFilePath;
     }

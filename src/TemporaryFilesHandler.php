@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 abstract class TemporaryFilesHandler
 {
     //This Folder Will Be In S3 (Main Storage Disk)
-    public const SystemTemporaryFilesMainFolderName = "SystemTemporaryFiles";
+    //public const SystemTemporaryFilesMainFolderName = "SystemTemporaryFiles";
 
 
     protected string $TempFilesFolderName = "tempFiles";
@@ -22,7 +22,7 @@ abstract class TemporaryFilesHandler
         $this->setTempFilesFolderPath();
     }
 
-    protected function processFolderPath(string  $folderPath) : string
+    public function processFolderPath(string  $folderPath) : string
     {
         return Str::endsWith($folderPath , "/") ? $folderPath : $folderPath . "/";
     }
@@ -30,19 +30,23 @@ abstract class TemporaryFilesHandler
     /**
      * @return string
      */
-    public function getSystemTemporaryFilesMainFolderPath() : string
+    // public function getSystemTemporaryFilesMainFolderPath() : string
+    // {
+    //     return $this->processFolderPath(
+    //                 CustomFileHandler::getFileStoragePath($this::SystemTemporaryFilesMainFolderName , $this->tempFilesDisk )
+    //             );
+    // }
+
+
+    public function getTempFileFolderPath(string $fileRelevantPath ) : string
     {
-        return $this->processFolderPath(
-                    CustomFileHandler::getFileStoragePath($this::SystemTemporaryFilesMainFolderName , $this->tempFilesDisk )
-                );
+        return $this->processFolderPath($this->getTempFilesFolderPath()) . $fileRelevantPath;
     }
 
-
-    protected function getTempFileFolderPath(string $fileRelevantPath ) : string
+    public function getTempFileRelevantPath(string $fileRelevantPath) : string
     {
-        return $this->processFolderPath($this->getTempFilesFolderPath() . $fileRelevantPath);
+        return $this->processFolderPath( $this->TempFilesFolderName ) . $fileRelevantPath;
     }
-
     /**
      * @return string
      */
@@ -121,12 +125,12 @@ abstract class TemporaryFilesHandler
         return $this->FolderExistOrCreate($folderPath);
     }
 
-    protected function deleteFile(string $filePath) : bool
+    public function deleteFile(string $filePath) : bool
     {
         return File::delete($filePath);
     }
 
-    protected function deleteFolder(string $folderPath) : bool
+    public function deleteFolder(string $folderPath) : bool
     {
         return File::deleteDirectory($folderPath);
     }
@@ -183,7 +187,7 @@ abstract class TemporaryFilesHandler
         return File::get($FilRealPath);
     }
 
-    static function getFolderFiles(  string $FolderRealPath  ) :  array
+    public static function getFolderFiles(  string $FolderRealPath  ) :  array
     {
         if(!File::exists($FolderRealPath)){return [];}
         return File::allFiles($FolderRealPath);

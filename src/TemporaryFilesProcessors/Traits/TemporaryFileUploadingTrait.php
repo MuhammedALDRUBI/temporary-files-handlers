@@ -27,17 +27,17 @@ trait TemporaryFileUploadingTrait
      * @param string $fileFolderRelevantPath
      * @throws Exception
      * @return string
-     * Returns Uploaded File's Relevant path in Storage (need to concatenate it with storage main path  )
+     * Returns Uploaded File's Relevant path in Storage (storage relevant path = need to concatenate it with storage main path  )
      */
-    public function uploadToStorage(string $filePathToUpload , string $fileName = "", string $fileFolderRelevantPath = "" ) : string
+    public function uploadToStorage(string $filePathToUpload , string $fileName = "" ) : string
     {
-        if(!$fileName){$fileName = $this->getFileDefaultName($filePathToUpload);}
-        if($fileFolderRelevantPath != ""){$fileFolderRelevantPath = $this->processFolderPath($fileFolderRelevantPath);}
+        if(!$fileName)
+        {
+            $fileName = $this->getFileDefaultName($filePathToUpload);
+        }
 
-        $SystemTemporaryFilesMainFolderName = $this->processFolderPath($this::SystemTemporaryFilesMainFolderName);
-
-        $fileNewRelevantPath = $SystemTemporaryFilesMainFolderName . $fileFolderRelevantPath . $fileName;
-
+        $fileNewRelevantPath = $this->getTempFileRelevantPath($fileName); 
+ 
         $this->initFileUploader();
         $file = $this->fileUploader->getUploadedFile($filePathToUpload , $fileNewRelevantPath);
         $this->fileUploader->makeFileReadyToStore($fileNewRelevantPath , $file);
