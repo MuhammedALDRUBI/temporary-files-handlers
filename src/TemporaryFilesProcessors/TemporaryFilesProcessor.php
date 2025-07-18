@@ -103,8 +103,13 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
      */
     protected function getFileFolderOrDefaultFolder(string $fileRelevantPath , string  $folderName = "") : string
     {
-        if(!$folderName) { $folderName = $this->getFileFolderPath($fileRelevantPath); }
+        if(!$folderName) 
+        {
+             $folderName = $this->getFileFolderPath($fileRelevantPath); 
+        }
+
         $this->FolderExistOrCreate($this->getCopiedTempFilesFolderPath() . $folderName) ;
+
         return $this->processFolderPath($folderName);
     }
 
@@ -137,7 +142,11 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
             $file = $this->prepareFileInfoArray($file);
             if($file)
             {
-               $this->addTempFileToCopy($file["fileRelevantPath"]  , $file["FolderName"] , $file["name"] );
+               $this->addTempFileToCopy(
+                                         $file["fileRelevantPath"]  ,
+                                         $file["FolderName"] ,
+                                         $file["name"] 
+                                       );
             }
         }
         return $this;
@@ -150,7 +159,10 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
      */
     public function HandleTempFileContentToCopy(string $fileContent  , string $fileRelevantPath ) : self
     {
-        if($this->IsItAbsolutePath($fileRelevantPath)){$fileRelevantPath = $this->getFolderFileRelativePath($fileRelevantPath);}
+        if($this->IsItAbsolutePath($fileRelevantPath))
+        {
+            $fileRelevantPath = $this->getFolderFileRelativePath($fileRelevantPath);
+        }
 
         $filePath = $this->getCopiedTempFilesFolderPath() . $fileRelevantPath;
 
@@ -158,6 +170,13 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
         $this->FileFolderExistOrCreate($filePath);
 
         File::put($filePath , $fileContent);
+
+        return $this;
+    }
+
+    protected function addTempFileInfo(string $oldPath , string $newPath) : self
+    {
+        $this->TempFilesToMove[] = ["oldPath" => $oldPath , "newPath" => $newPath];
         return $this;
     }
 
@@ -171,18 +190,16 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
     {
         $this->FileExistOrFail($fileTempPath);
 
-        if(!$fileRelevantPath) { $fileRelevantPath = $this->getFileDefaultName($fileTempPath); }
+        if(!$fileRelevantPath) 
+        { 
+            $fileRelevantPath = $this->getFileDefaultName($fileTempPath); 
+        }
+
         /**  Make Sure That Target Folder Is Exists */
         $targetPath = $this->getCopiedTempFilesFolderPath() . $fileRelevantPath;
         $this->FileFolderExistOrCreate($targetPath);
 
         return $this->addTempFileInfo($fileTempPath , $targetPath);
-    }
-
-    protected function addTempFileInfo(string $oldPath , string $newPath) : self
-    {
-        $this->TempFilesToMove[] = ["oldPath" => $oldPath , "newPath" => $newPath];
-        return $this;
     }
 
     protected function moveTempFiles() : self
@@ -204,7 +221,10 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
      */
     public function addTempFileToCopy( string $fileRelevantPath , string  $folderName = "" , string $fileName = "" , bool $checkFileExisting = false) : self
     {
-        if($this->IsItAbsolutePath($fileRelevantPath)){ $fileRelevantPath = $this->getFolderFileRelativePath($fileRelevantPath); }
+        if($this->IsItAbsolutePath($fileRelevantPath))
+        { 
+            $fileRelevantPath = $this->getFolderFileRelativePath($fileRelevantPath); 
+        }
 
         if($checkFileExisting)
         {
@@ -212,7 +232,12 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
         }
 
         $fileName = $this->getFileDefaultName( $fileRelevantPath  ,  $fileName  );
-        $this->FilesToCopy[] = ["name" => $fileName , "fileRelevantOldPath" => $fileRelevantPath , "FolderName" =>  $this->getFileFolderOrDefaultFolder($fileRelevantPath ,$folderName) ];
+
+        $this->FilesToCopy[] = [
+                                    "name" => $fileName ,
+                                    "fileRelevantOldPath" => $fileRelevantPath ,
+                                    "FolderName" =>  $this->getFileFolderOrDefaultFolder($fileRelevantPath ,$folderName) 
+                               ];
         return $this;
     }
 
@@ -233,6 +258,22 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
 
 
     /**
+     * @param array $fileInfo
+     * @return $this
+     * @throws FileNotFoundException
+     */
+    protected function prepareTempsFileToCopying(array $fileInfo) : self
+    {
+        $fileOldPath = $fileInfo["fileRelevantOldPath"];
+        $fileNewPath =  $fileInfo["FolderName"] . $fileInfo["name"];
+
+        return $this->HandleTempFileContentToCopy( 
+                                                    CustomFileHandler::getFileContent($fileOldPath),
+                                                    $fileNewPath 
+                                                 );
+    }
+
+    /**
      * @return $this
      * @throws FileNotFoundException
      */
@@ -243,19 +284,6 @@ class TemporaryFilesProcessor extends TemporaryFilesHandler
             $this->prepareTempsFileToCopying($file);
         }
         return $this;
-    }
-
-    /**
-     * @param array $fileInfo
-     * @return $this
-     * @throws FileNotFoundException
-     */
-    protected function prepareTempsFileToCopying(array $fileInfo) : self
-    {
-        $fileOldPath = $fileInfo["fileRelevantOldPath"];
-        $fileNewPath =  $fileInfo["FolderName"] . $fileInfo["name"];
-
-        return $this->HandleTempFileContentToCopy( CustomFileHandler::getFileContent($fileOldPath), $fileNewPath );
     }
 
     /**

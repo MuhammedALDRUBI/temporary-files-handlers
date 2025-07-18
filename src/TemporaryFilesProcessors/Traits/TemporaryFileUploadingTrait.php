@@ -16,8 +16,11 @@ trait TemporaryFileUploadingTrait
      */
     protected function initFileUploader() : TemporaryFilesHandler
     {
-        if($this->fileUploader){return $this;}
-        $this->fileUploader = new S3CustomFileUploader();
+        if(!$this->fileUploader)
+        {
+            $this->fileUploader = new S3CustomFileUploader();
+        }
+        
         return $this;
     }
 
@@ -39,6 +42,7 @@ trait TemporaryFileUploadingTrait
         $fileNewRelevantPath = $this->getTempFileRelevantPath($fileName); 
  
         $this->initFileUploader();
+        
         $file = $this->fileUploader->getUploadedFile($filePathToUpload , $fileNewRelevantPath);
         $this->fileUploader->makeFileReadyToStore($fileNewRelevantPath , $file);
         $this->fileUploader->uploadFiles();

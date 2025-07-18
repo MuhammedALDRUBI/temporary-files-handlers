@@ -52,7 +52,9 @@ abstract class TemporaryFilesHandler
      */
     public function getTempFilesFolderPath() : string
     {
-        return $this->processFolderPath( CustomFileHandler::getFileStoragePath($this->TempFilesFolderName , $this->tempFilesDisk) );
+        $folderPath = CustomFileHandler::getFileStoragePath($this->TempFilesFolderName , $this->tempFilesDisk) ;
+        
+        return $this->processFolderPath($folderPath);
     }
 
     /**
@@ -93,8 +95,11 @@ abstract class TemporaryFilesHandler
      */
     protected function FolderExistOrCreate(string $folderPath  ) : self
     {
-        if($this->IsFolderExists($folderPath)){return $this;}
-        File::makeDirectory($folderPath , 0755 ,true);
+        if(!$this->IsFolderExists($folderPath))
+        {
+            File::makeDirectory($folderPath , 0755 ,true);
+        }
+
         return $this;
     }
 
@@ -109,10 +114,12 @@ abstract class TemporaryFilesHandler
      * @return $this
      * @throws Exception
      */
-    protected function FileExistOrFail(string $filePath ) : self
+    protected function FileExistOrFail(string $filePath ) : void
     {
-        if($this->IsFileExists($filePath)){return $this;}
-        throw new Exception("The Given File Is Not Exists In The Given Path");
+      if(!$this->IsFileExists($filePath))
+        {
+            throw new Exception("The Given File Is Not Exists In The Given Path");   
+        }
     }
 
     /**
@@ -166,8 +173,15 @@ abstract class TemporaryFilesHandler
 
     protected function getFolderFileRelativePath(string $FilRealPath , string $FolderPath = "") : string
     {
-        if($FolderPath == ""){$FolderPath = CustomFileHandler::getStoragePath($this->tempFilesDisk);}
-        return $this->getFileRelativePath($FilRealPath , $this->getFolderFileRelativePathIndex($FolderPath));
+        if($FolderPath == "")
+        {
+           $FolderPath = CustomFileHandler::getStoragePath($this->tempFilesDisk);
+        }
+
+        return $this->getFileRelativePath(
+                                            $FilRealPath ,
+                                            $this->getFolderFileRelativePathIndex($FolderPath)
+                                         );
     }
 
     protected function IsItAbsolutePath(string $path):bool
@@ -184,14 +198,19 @@ abstract class TemporaryFilesHandler
     public function getFileContent(string $FilRealPath) : string
     {
         $this->FileExistOrFail($FilRealPath);
-        return File::get($FilRealPath);
+        return File::get($FilRealPath) ?? "";
     }
 
     public static function getFolderFiles(  string $FolderRealPath  ) :  array
     {
-        if(!File::exists($FolderRealPath)){return [];}
-        return File::allFiles($FolderRealPath);
+        if(File::exists($FolderRealPath))
+        {
+            return File::allFiles($FolderRealPath);
+        }
+        
+        return [];
     }
+
     static function getFileExtension(string $FilRealPath) : string
     {
         return File::extension($FilRealPath);

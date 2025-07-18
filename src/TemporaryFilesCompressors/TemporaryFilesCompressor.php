@@ -16,7 +16,7 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
     protected ?ZipArchive $zip;
     protected string $zipFileName;
     protected string $zipFilePath;
-    protected string $zipPassword = "";
+    protected ?string $zipPassword = null;
     protected string $compressedFolderPath ;
     protected int $CompressedFolderFilesRelativePathIndex;
     protected int $CompressionAlgorithm;
@@ -35,7 +35,7 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
      * @param string $zipPassword
      * @return $this
      */
-    public function setZipPassword(string $zipPassword = ""): self
+    public function setZipPassword(?string $zipPassword = null): self
     {
         $this->zipPassword = $zipPassword;
         return $this;
@@ -88,7 +88,10 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
 
     protected function getFileEntryName(string $fileRealPath) : string
     {
-        return $this->getFileRelativePath($fileRealPath , $this->CompressedFolderFilesRelativePathIndex);
+        return $this->getFileRelativePath(
+                                            $fileRealPath ,
+                                            $this->CompressedFolderFilesRelativePathIndex
+                                         );
     }
 
     protected function addFileToZip(string $filePath ) : void
@@ -100,14 +103,12 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
         $this->zip->setEncryptionName($fileEntryName , ZipArchive::EM_AES_256 , $this->zipPassword);
     }
 
-    public static function getFolderFiles(  string $FolderRealPath  ) :  array
-    {
-        return File::allFiles($FolderRealPath);
-    }
-
     protected function setCompressedFolderFilesRelativePathIndex() : self
     {
-        $this->CompressedFolderFilesRelativePathIndex = $this->getFolderFileRelativePathIndex($this->compressedFolderPath);
+        $this->CompressedFolderFilesRelativePathIndex 
+        =
+        $this->getFolderFileRelativePathIndex($this->compressedFolderPath);
+
         return $this;
     }
 
@@ -120,6 +121,7 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
     protected function addFolderFilesToZip(string $FolderPath) : self
     {
         $this->setCompressedFolderFilesRelativePathIndex();
+
         foreach ($this::getFolderFiles($FolderPath) as $file)
         {
             $this->addFileToZip($file->getRealPath());
@@ -184,7 +186,11 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
          * @todo : needs to check if the folder path created in temp path or not 
          */
         $this->setCompressedFolderPath($FolderPath);
-        if($CompressedFolderNewPath != "") { $FolderPath = $CompressedFolderNewPath; }
+        if($CompressedFolderNewPath != "") 
+        {
+            $FolderPath = $CompressedFolderNewPath; 
+        }
+
         return $this->setZipFilePath($FolderPath)->setCompressedFileName();
     }
 
@@ -239,13 +245,18 @@ class TemporaryFilesCompressor extends TemporaryFilesHandler
      */
     public function extractTo(string $zipFilePath , string $newFolderPath = "") : string
     {
-        $this->restartCompressor()->setZipFilePath($zipFilePath)->setCompressedFileName()->openZipFile();
+        $this->restartCompressor()
+             ->setZipFilePath($zipFilePath)
+             ->setCompressedFileName()
+             ->openZipFile();
 
         $newFolderPath = $this->processExtractedFolderPath($zipFilePath , $newFolderPath);
+
         if(!$this->zip->setPassword($this->zipPassword))
         {
             throw new  Exception("Can't Extracting The Compressed File Using The Given Password");
         }
+        
         $this->zip->extractTo($newFolderPath);
         $this->closeZipFile();
         return $newFolderPath;
