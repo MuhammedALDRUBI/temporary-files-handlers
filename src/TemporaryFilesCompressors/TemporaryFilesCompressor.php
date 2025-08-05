@@ -3,11 +3,9 @@
 namespace TemporaryFilesHandlers\TemporaryFilesCompressors;
 
 use TemporaryFilesHandlers\TemporaryFilesHandler;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionException;
-use Symfony\Component\Finder\SplFileInfo;
 use ZipArchive;
 use Exception;
 
